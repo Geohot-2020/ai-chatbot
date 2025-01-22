@@ -1,4 +1,13 @@
-// Define your models here.
+/**
+ * AI 模型定义
+ * 
+ * 该模块定义:
+ * 1. 可用的 AI 模型
+ * 2. 模型接口
+ * 3. 默认模型
+ * 
+ * @module lib/ai/models
+ */
 
 export interface Model {
   id: string;

@@ -1,3 +1,9 @@
+/**
+ * 聊天界面
+ * 加载已有聊天
+ * 权限验证
+ * 消息展示
+ */
 import { cookies } from 'next/headers';
 import { notFound } from 'next/navigation';
 

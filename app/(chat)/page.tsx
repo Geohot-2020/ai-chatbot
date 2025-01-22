@@ -1,3 +1,9 @@
+/**
+ * 主页
+ * 新建聊天入口
+ * 模型选择
+ * 数据流处理
+ */
 import { cookies } from 'next/headers';
 
 import { Chat } from '@/components/chat';

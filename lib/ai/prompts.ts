@@ -1,3 +1,4 @@
+// 系统提示词
 import { BlockKind } from '@/components/block';
 
 export const blocksPrompt = `

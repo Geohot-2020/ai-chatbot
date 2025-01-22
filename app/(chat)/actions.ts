@@ -1,3 +1,9 @@
+/**
+ * 服务端
+ * 保存模型选择
+ * 生成对话标题
+ * 管理历史消息
+ */
 'use server';
 
 import { type CoreUserMessage, generateText } from 'ai';
