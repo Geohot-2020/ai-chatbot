@@ -1,3 +1,4 @@
+// 2025-01-25：添加一个 prop, disableScroll来禁用内部滚动
 import { ChatRequestOptions, Message } from 'ai';
 import { PreviewMessage, ThinkingMessage } from './message';
 import { useScrollToBottom } from './use-scroll-to-bottom';
@@ -19,6 +20,7 @@ interface MessagesProps {
   ) => Promise<string | null | undefined>;
   isReadonly: boolean;
   isBlockVisible: boolean;
+  disableScroll?: boolean;
 }
 
 function PureMessages({
@@ -29,15 +31,13 @@ function PureMessages({
   setMessages,
   reload,
   isReadonly,
+  disableScroll = false,
 }: MessagesProps) {
   const [messagesContainerRef, messagesEndRef] =
     useScrollToBottom<HTMLDivElement>();
 
   return (
-    <div
-      ref={messagesContainerRef}
-      className="flex flex-col min-w-0 gap-6 flex-1 overflow-y-scroll pt-4"
-    >
+    <div className={`flex flex-col gap-6 flex-1 ${!disableScroll ? 'overflow-y-scroll' : ''}`}>
       {/* {messages.length === 0 && <Overview />} */}
 
       {messages.map((message, index) => (

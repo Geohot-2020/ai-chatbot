@@ -14,6 +14,7 @@ import { MultimodalInput } from './multimodal-input';
 import { Messages } from './messages';
 import { VisibilityType } from './visibility-selector';
 import { useBlockSelector } from '@/hooks/use-block';
+import { InlineChat } from './inline-chat';
 
 export function Chat({
   id,
@@ -57,6 +58,7 @@ export function Chat({
 
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
   const isBlockVisible = useBlockSelector((state) => state.isVisible);
+  const [isInlineChatOpen, setIsInlineChatOpen] = useState(false);
 
   return (
     <>
@@ -66,6 +68,7 @@ export function Chat({
           selectedModelId={selectedModelId}
           selectedVisibilityType={selectedVisibilityType}
           isReadonly={isReadonly}
+          onInlineChatExpand={setIsInlineChatOpen}
         />
 
         <Messages
@@ -113,6 +116,15 @@ export function Chat({
         reload={reload}
         votes={votes}
         isReadonly={isReadonly}
+      />
+      
+      {/* 内联对话框 */}
+      <InlineChat 
+        isOpen={isInlineChatOpen}
+        onClose={() => setIsInlineChatOpen(false)}
+        initialValue={messages.findLast(m => m.role === 'user')?.content}
+        modelId={selectedModelId}
+        id={id}
       />
     </>
   );

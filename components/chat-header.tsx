@@ -1,5 +1,5 @@
 'use client';
-
+// 2025-01-25：集成到现有聊天界面
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useWindowSize } from 'usehooks-ts';
@@ -12,18 +12,23 @@ import { useSidebar } from './ui/sidebar';
 import { memo } from 'react';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { VisibilityType, VisibilitySelector } from './visibility-selector';
+import { MessageSquareIcon } from 'lucide-react';
+
+interface ChatHeaderProps {
+  chatId: string;
+  selectedModelId: string;
+  selectedVisibilityType: VisibilityType;
+  isReadonly: boolean;
+  onInlineChatExpand?: (expanded: boolean) => void;
+}
 
 function PureChatHeader({
   chatId,
   selectedModelId,
   selectedVisibilityType,
   isReadonly,
-}: {
-  chatId: string;
-  selectedModelId: string;
-  selectedVisibilityType: VisibilityType;
-  isReadonly: boolean;
-}) {
+  onInlineChatExpand
+}: ChatHeaderProps) {
   const router = useRouter();
   const { open } = useSidebar();
 
@@ -67,8 +72,23 @@ function PureChatHeader({
         />
       )}
 
-      <Button
-        className="bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-zinc-50 dark:text-zinc-900 hidden md:flex py-1.5 px-2 h-fit md:h-[34px] order-4 md:ml-auto"
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button 
+            variant="outline"
+            className="order-4 md:order-5 gap-2"
+            onClick={() => onInlineChatExpand?.(true)}
+          >
+            <MessageSquareIcon className="h-4 w-4" />
+            <span className="hidden md:inline">Inline Dialog</span>
+            <span className="sr-only">Inline Dialog</span>
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>Inline Dialog</TooltipContent>
+      </Tooltip>
+
+      {/* <Button
+        className="bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-zinc-50 dark:text-zinc-900 hidden md:flex py-1.5 px-2 h-fit md:h-[34px] order-5 md:order-6"
         asChild
       >
         <Link
@@ -78,7 +98,7 @@ function PureChatHeader({
           <VercelIcon size={16} />
           Deploy with Vercel
         </Link>
-      </Button>
+      </Button> */}
     </header>
   );
 }
