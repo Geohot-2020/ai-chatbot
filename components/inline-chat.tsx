@@ -1,13 +1,17 @@
 'use client';
 // 2025-01-25：实现内联对话框的基本功能
-// TODO: Vote的外键约束 消息ID和数据库之间还不对
+// 2025-02-02: 修复Vote功能
+// TODO：内联对话框是通过新建一个新会话完成，但是若是去GET了History操作，则会显示出来在历史列表
+//       现在是切换会话后就删除这个临时的
 
 import { useChat } from 'ai/react';
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { useSWRConfig } from 'swr';
 import { generateUUID } from '@/lib/utils';
-import { Message, Attachment } from 'ai';
+import { Attachment } from 'ai';
 import { MessageSquare, X } from 'lucide-react';
+import useSWR from 'swr';
+import { Vote } from '@/lib/db/schema';
 
 import { MultimodalInput } from './multimodal-input';
 import { BlockMessages } from './block-messages';
@@ -34,6 +38,11 @@ export function InlineChat({
   const inlineChatId = useMemo(() => generateUUID(), [id]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  const { data: votes } = useSWR<Array<Vote>>(
+    `/api/vote?chatId=${inlineChatId}`,
+    (url: string) => fetch(url).then(res => res.json())
+  );
+
   const {
     messages,
     setMessages,
@@ -46,59 +55,16 @@ export function InlineChat({
     reload,
   } = useChat({
     id: inlineChatId,
-    body: { id: inlineChatId, modelId },
+    body: { 
+      id: inlineChatId, 
+      modelId,
+      saveHistory: true  // 使用 AI SDK 的内置保存功能
+    },
     initialMessages: initialValue ? [{
       id: generateUUID(),
       role: 'user',
       content: initialValue
-    }] : [],
-    onResponse: async (response) => {
-      if (!response.ok) return;
-      const reader = response.body?.getReader();
-      if (!reader) return;
-      
-      try {
-        let currentResponse = '';
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          
-          const text = new TextDecoder().decode(value);
-          const lines = text.split('\n').filter(line => line.trim());
-          
-          for (const line of lines) {
-            if (line.startsWith('0:"')) {
-              const content = line.slice(3, -1)
-                .replace(/\\n/g, '\n')
-                .replace(/\\"/g, '"');
-              currentResponse += content;
-              setMessages(messages => {
-                const lastMessage = messages[messages.length - 1];
-                if (lastMessage?.role === 'assistant') {
-                  return [
-                    ...messages.slice(0, -1),
-                    { ...lastMessage, content: currentResponse }
-                  ];
-                }
-                return [
-                  ...messages,
-                  {
-                    id: generateUUID(),
-                    role: 'assistant',
-                    content: currentResponse
-                  }
-                ];
-              });
-            }
-          }
-        }
-      } catch (e) {
-        console.error('Stream error:', e);
-      }
-    },
-    onFinish: () => {
-      // 不需要额外处理
-    }
+    }] : []
   });
 
   // 处理关闭事件 - 只关闭对话框
@@ -166,7 +132,7 @@ export function InlineChat({
             chatId={inlineChatId}
             messages={messages}
             isLoading={isLoading}
-            votes={[]}
+            votes={votes}
             setMessages={setMessages}
             reload={reload}
             isReadonly={false}
